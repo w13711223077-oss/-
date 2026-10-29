@@ -1,0 +1,220 @@
+{
+  "source": "sample_annotation.json",
+  "mode": "api",
+  "model": "（人为构造的错误输出，用于验证工具能报错）",
+  "results": [
+    {
+      "id": "P001",
+      "skeleton": {
+        "sentences": [
+          {
+            "i": 0,
+            "type": "背景",
+            "level": null,
+            "confidence": "高"
+          },
+          {
+            "i": 1,
+            "type": "条件",
+            "level": "间接",
+            "confidence": "高"
+          },
+          {
+            "i": 2,
+            "type": "条件",
+            "level": "间接",
+            "confidence": "高"
+          },
+          {
+            "i": 3,
+            "type": "问题",
+            "level": null,
+            "confidence": "高"
+          },
+          {
+            "i": 4,
+            "type": "指令",
+            "level": null,
+            "confidence": "高"
+          }
+        ],
+        "implicit": [
+          "不管怎么坐，总人数不变",
+          "最后一辆只坐 15 人 → 前面 (x−1) 辆车是坐满的"
+        ]
+      },
+      "cases": [
+        {
+          "case_id": "P001-C1",
+          "student_says": "总人数不变",
+          "verdict": "correct",
+          "reason": "（基线模式：直接采用标注）"
+        },
+        {
+          "case_id": "P001-C2",
+          "student_says": "坐的车数和总人数是不变的",
+          "verdict": "wrong",
+          "reason": "学生没说出「总人数不变」这几个字"
+        },
+        {
+          "case_id": "P001-C3",
+          "student_says": "前面那几辆车都是坐满的",
+          "verdict": "correct",
+          "reason": "（基线模式：直接采用标注）"
+        },
+        {
+          "case_id": "P001-C4",
+          "student_says": "每辆车都要坐满 45 人",
+          "verdict": "wrong",
+          "reason": "（基线模式：直接采用标注）"
+        },
+        {
+          "case_id": "P001-C5",
+          "student_says": "车一共有 5 辆",
+          "verdict": "correct",
+          "reason": "看起来相关"
+        }
+      ]
+    },
+    {
+      "id": "P002",
+      "skeleton": {
+        "sentences": [
+          {
+            "i": 0,
+            "type": "条件",
+            "level": "直接",
+            "confidence": "高"
+          },
+          {
+            "i": 1,
+            "type": "背景",
+            "level": null,
+            "confidence": "高"
+          },
+          {
+            "i": 2,
+            "type": "条件",
+            "level": "间接",
+            "confidence": "高"
+          },
+          {
+            "i": 3,
+            "type": "条件",
+            "level": "间接",
+            "confidence": "高"
+          },
+          {
+            "i": 4,
+            "type": "问题",
+            "level": null,
+            "confidence": "高"
+          }
+        ],
+        "implicit": [
+          "「前一半路程」和「后一半路程」指的是各 120 千米，不是各一半时间",
+          "总时间 = 前一半用时 + 后一半用时"
+        ]
+      },
+      "cases": [
+        {
+          "case_id": "P002-C1",
+          "student_says": "前一半和后一半都是 120 千米",
+          "verdict": "correct",
+          "reason": "（基线模式：直接采用标注）"
+        },
+        {
+          "case_id": "P002-C2",
+          "student_says": "不管是前半段还是后半段，路都是平分的",
+          "verdict": "correct",
+          "reason": "（基线模式：直接采用标注）"
+        },
+        {
+          "case_id": "P002-C3",
+          "student_says": "总时间是两段加起来",
+          "verdict": "correct",
+          "reason": "（基线模式：直接采用标注）"
+        },
+        {
+          "case_id": "P002-C4",
+          "student_says": "两段用的时间一样",
+          "verdict": "wrong",
+          "reason": "（基线模式：直接采用标注）"
+        },
+        {
+          "case_id": "P002-C5",
+          "student_says": "平均速度是 70 千米每小时",
+          "verdict": "wrong",
+          "reason": "（基线模式：直接采用标注）"
+        }
+      ]
+    },
+    {
+      "id": "P003",
+      "skeleton": {
+        "sentences": [
+          {
+            "i": 0,
+            "type": "条件",
+            "level": "间接",
+            "confidence": "高"
+          },
+          {
+            "i": 1,
+            "type": "条件",
+            "level": "直接",
+            "confidence": "高"
+          },
+          {
+            "i": 2,
+            "type": "条件",
+            "level": "隐含",
+            "confidence": "高"
+          },
+          {
+            "i": 3,
+            "type": "问题",
+            "level": null,
+            "confidence": "高"
+          }
+        ],
+        "implicit": [
+          "整个工程的工作量是 1",
+          "甲队休息的 5 天里，只有乙队在干活"
+        ]
+      },
+      "cases": [
+        {
+          "case_id": "P003-C1",
+          "student_says": "总工作量是 1",
+          "verdict": "correct",
+          "reason": "（基线模式：直接采用标注）"
+        },
+        {
+          "case_id": "P003-C2",
+          "student_says": "把这项工程看成一份活",
+          "verdict": "correct",
+          "reason": "（基线模式：直接采用标注）"
+        },
+        {
+          "case_id": "P003-C3",
+          "student_says": "甲休息的那 5 天只有乙在干",
+          "verdict": "correct",
+          "reason": "（基线模式：直接采用标注）"
+        },
+        {
+          "case_id": "P003-C4",
+          "student_says": "甲乙一起做的天数就是总天数",
+          "verdict": "wrong",
+          "reason": "（基线模式：直接采用标注）"
+        },
+        {
+          "case_id": "P003-C5",
+          "student_says": "甲队一共做了 15 天",
+          "verdict": "wrong",
+          "reason": "（基线模式：直接采用标注）"
+        }
+      ]
+    }
+  ]
+}
