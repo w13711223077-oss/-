@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>审题陪练 · 先把这道题读一遍</title>
+<style>
+  :root {
+    color-scheme: light;
+    --paper: #f6f2e9;
+    --card: #fffdf8;
+    --ink: #202824;
+    --muted: #6f776f;
+    --line: #ddd5c6;
+    --accent: #2f6b5f;
+    --accent-dark: #275a50;
+    --soft: #f4faf7;
+    --warm: #b27a2c;
+    --danger: #a24b3b;
+    --shadow: 0 10px 30px rgba(32, 40, 36, .08);
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background:
+      radial-gradient(circle at 12% 0%, rgba(178, 122, 44, .07), transparent 42%),
+      radial-gradient(circle at 92% 18%, rgba(47, 107, 95, .06), transparent 46%),
+      var(--paper);
+    color: var(--ink);
+    font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .top {
+    max-width: 720px; margin: 0 auto; padding: 22px 20px 0;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .brand {
+    font-family: "Songti SC", "Noto Serif CJK SC", "SimSun", serif;
+    font-size: 15px; letter-spacing: .14em; color: var(--accent);
+  }
+  .brand span { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--warm); margin-left: 6px; vertical-align: 1px; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 30px 20px 64px; }
+  .step { font-size: 12px; letter-spacing: .14em; color: var(--muted); margin: 0 0 12px 2px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 20px;
+    padding: 30px 28px; box-shadow: var(--shadow);
+  }
+  h1 {
+    font-family: "Songti SC", "Noto Serif CJK SC", "SimSun", serif;
+    font-size: clamp(24px, 5vw, 32px); line-height: 1.35; font-weight: 600;
+    letter-spacing: .01em; margin: 0 0 12px;
+  }
+  .lede { font-size: 16px; line-height: 1.85; color: var(--muted); margin: 0 0 22px; }
+  .big-line {
+    font-family: "Songti SC", "Noto Serif CJK SC", "SimSun", serif;
+    font-size: clamp(20px, 4.5vw, 26px); line-height: 1.75; margin: 16px 0 10px;
+  }
+  .muted { color: var(--muted); font-size: 14px; line-height: 1.8; }
+  .hint { color: var(--muted); font-size: 13px; line-height: 1.8; margin: 16px 0 0; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; align-items: center; }
+  .btn {
+    appearance: none; border: 1px solid var(--line); background: #fff; color: var(--ink);
+    padding: 12px 18px; border-radius: 12px; font: inherit; font-size: 15px;
+    cursor: pointer; transition: border-color .18s, background .18s, transform .18s;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { background: var(--accent-dark); }
+  .btn.ghost { border-color: transparent; background: transparent; color: var(--muted); padding: 8px 10px; }
+  .btn:disabled { opacity: .45; cursor: default; transform: none; }
+  textarea {
+    width: 100%; border: 1px solid var(--line); border-radius: 14px;
+    padding: 14px 16px; font: inherit; font-size: 15px; line-height: 1.85;
+    background: #fff; color: var(--ink); resize: vertical;
+  }
+  textarea:focus { outline: 3px solid rgba(47, 107, 95, .16); border-color: var(--accent); }
+  .sentence {
+    margin: 18px 0 6px; padding: 18px 20px; background: #f8f4ea;
+    border-radius: 14px; font-family: "Songti SC", "Noto Serif CJK SC", "SimSun", serif;
+    font-size: 19px; line-height: 1.95;
+  }
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0 0; }
+  .options.three { grid-template-columns: repeat(3, 1fr); }
+  .opt {
+    text-align: left; border: 1px solid var(--line); background: #fff;
+    border-radius: 14px; padding: 14px 16px; cursor: pointer; font: inherit;
+    transition: border-color .18s, background .18s, transform .18s;
+  }
+  .opt:hover { border-color: var(--accent); background: var(--soft); }
+  .opt:active { transform: translateY(1px); }
+  .opt b { display: block; font-size: 16px; font-weight: 600; margin-bottom: 3px; }
+  .opt span { display: block; font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .opt:disabled { opacity: .45; cursor: default; transform: none; }
+  .feedback {
+    margin-top: 20px; padding: 16px 18px; border-left: 3px solid var(--accent);
+    background: var(--soft); border-radius: 0 14px 14px 0; line-height: 1.8;
+  }
+  .feedback .why { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .feedback .sub { font-size: 14px; color: var(--muted); }
+  .preview { margin-top: 18px; }
+  .preview img {
+    width: 100%; max-height: 320px; object-fit: contain;
+    border: 1px solid var(--line); border-radius: 14px; background: #fff;
+  }
+  .paste { margin-top: 18px; }
+  .parent { margin-top: 22px; text-align: center; font-size: 12px; color: var(--muted); }
+  .busy {
+    position: fixed; inset: 0; z-index: 10; background: rgba(246, 242, 233, .82);
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    backdrop-filter: blur(2px); color: var(--muted); font-size: 14px;
+  }
+  .spinner {
+    width: 18px; height: 18px; border: 2px solid var(--line); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast {
+    position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%);
+    background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 999px;
+    font-size: 14px; z-index: 20; box-shadow: 0 8px 24px rgba(32, 40, 36, .18);
+    max-width: calc(100vw - 40px); text-align: center;
+  }
+  @media (max-width: 560px) {
+    .card { padding: 24px 20px; border-radius: 16px; }
+    .options { grid-template-columns: 1fr 1fr; }
+    .options.three { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">审题陪练<span></span></div>
+  <button id="voice" class="btn ghost" type="button">语音：开</button>
+</header>
+<main class="wrap">
+  <div id="step" class="step">S1 · 拍照</div>
+  <section id="app" class="card" aria-live="polite"></section>
+  <p class="parent">给家长：它不给答案，只教孩子把题读懂。</p>
+</main>
+<div id="busy" class="busy" hidden><span class="spinner"></span><span id="busyText">我在准备…</span></div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(function () {
+  'use strict';
+
+  const API = location.protocol === 'file:' ? 'http://127.0.0.1:8787' : '';
+  const app = document.getElementById('app');
+  const stepEl = document.getElementById('step');
+  const busyEl = document.getElementById('busy');
+  const busyText = document.getElementById('busyText');
+  const toastEl = document.getElementById('toast');
+  const voiceBtn = document.getElementById('voice');
+
+  const STEP_NAMES = {
+    S1: 'S1 · 拍照', S2: 'S2 · 确认题目', S3: 'S3 · 准备',
+    S4: 'S4 · 开场', S5: 'S5 · 逐句标注', S6: 'S6 · 条件定级',
+    S7: 'S7 · 隐含条件', S8: 'S8 · 收束'
+  };
+
+  const INTRO = {
+    S4: '我们先把这道题读一遍，不着急做。',
+    S5: '先看这一句。它在讲一件什么事？',
+    S6: '这一句的条件，能直接拿来用吗？',
+    S7: '这几句里，有没有藏着一个没说出来的东西？',
+    S8: '这道题你已经读明白了。'
+  };
+
+  const TYPE_OPTIONS = [
+    { v: '背景', d: '交代情境，不给数量' },
+    { v: '条件', d: '给了数字或关系' },
+    { v: '问题', d: '在问什么' },
+    { v: '指令', d: '要求你做什么' }
+  ];
+
+  const LEVEL_OPTIONS = [
+    { v: '直接', d: '拿来就能用' },
+    { v: '间接', d: '要转一步' },
+    { v: '隐含', d: '题目没说，但必须成立' }
+  ];
+
+  const state = {
+    sessionId: null,
+    screen: 'S1',
+    text: '',
+    image: '',
+    stub: false,
+    progress: null,
+    summary: null,
+    hintTimer: null,
+    stuckTimer: null
+  };
+
+  let voiceOn = true;
+  let hasInteracted = false;
+  let toastTimer = null;
+
+  function esc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function setBusy(text) {
+    busyEl.hidden = !text;
+    if (text) busyText.textContent = text;
+  }
+
+  function toast(text) {
+    toastEl.textContent = text;
+    toastEl.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.hidden = true; }, 2800);
+  }
+
+  function speak(text) {
+    if (!voiceOn || !('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'zh-CN';
+      u.rate = 0.95;
+      u.pitch = 1;
+      window.speechSynthesis.speak(u);
+    } catch (e) { /* 语音不可用就静默 */ }
+  }
+
+  function clearTimers() {
+    clearTimeout(state.hintTimer);
+    clearTimeout(state.stuckTimer);
+    state.hintTimer = null;
+    state.stuckTimer = null;
+  }
+
+  function startTimer(onHint, onStuck) {
+    clearTimers();
+    state.hintTimer = setTimeout(onHint, 15000);
+    state.stuckTimer = setTimeout(onStuck, 40000);
+  }
+
+  async function api(path, body, method) {
+    const res = await fetch(API + path, {
+      method: method || 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: body == null ? undefined : JSON.stringify(body)
+    });
+    let data = {};
+    try { data = await res.json(); } catch (e) { data = {}; }
+    if (!res.ok) {
+      const msg = data.错误 || data.提示 || ('请求失败（' + res.status + '）');
+      const err = new Error(msg);
+      err.code = data.码;
+      throw err;
+    }
+    return data;
+  }
+
+  function setScreen(screen) {
+    clearTimers();
+    state.screen = screen;
+    stepEl.textContent = STEP_NAMES[screen] || '';
+    render();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (hasInteracted && INTRO[screen]) speak(INTRO[screen]);
+  }
+
+  function reset() {
+    state.sessionId = null;
+    state.text = '';
+    state.image = '';
+    state.stub = false;
+    state.progress = null;
+    state.summary = null;
+  }
+
+  function showError(message, retry) {
+    clearTimers();
+    setBusy('');
+    app.innerHTML =
+      '<h1>这一步没接上</h1>' +
+      '<p class="lede">' + esc(message) + '</p>' +
+      '<div class="row"><button id="retry" class="btn primary" type="button">再试一次</button>' +
+      '<button id="home" class="btn ghost" type="button">回到开头</button></div>';
+    document.getElementById('retry').onclick = function () { hasInteracted = true; retry(); };
+    document.getElementById('home').onclick = function () { hasInteracted = true; reset(); setScreen('S1'); };
+  }
+
+  async function ensureSession() {
+    if (state.sessionId) return state.sessionId;
+    const data = await api('/api/v1/sessions', {});
+    state.sessionId = data.session_id;
+    return state.sessionId;
+  }
+
+  // ── S1 拍照 / 粘贴 ────────────────────────────────────────
+  function renderS1() {
+    app.innerHTML =
+      '<h1>先把这道题读一遍</h1>' +
+      '<p class="lede">不着急做。它觉得你能想出来。</p>' +
+      '<div class="row">' +
+      '  <button id="pick" class="btn primary" type="button">拍照 / 选图</button>' +
+      '  <button id="paste" class="btn" type="button">直接粘贴题目</button>' +
+      '</div>' +
+      '<input id="file" type="file" accept="image/*" capture="environment" hidden>' +
+      '<div id="preview" class="preview" hidden></div>' +
+      '<div id="pasteBox" class="paste" hidden>' +
+      '  <textarea id="pasteText" rows="5" placeholder="把题目文字粘到这里……"></textarea>' +
+      '  <div class="row"><button id="useText" class="btn primary" type="button">用这段文字</button></div>' +
+      '</div>' +
+      '<p class="hint">拍作业本上的应用题；识别不准也没关系，下一步可以改。</p>';
+
+    const file = document.getElementById('file');
+    document.getElementById('pick').onclick = function () { file.click(); };
+
+    file.onchange = function () {
+      const f = file.files && file.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = function () {
+        state.image = String(reader.result || '');
+        const box = document.getElementById('preview');
+        box.hidden = false;
+        box.innerHTML =
+          '<img src="' + esc(state.image) + '" alt="题目照片">' +
+          '<div class="row"><button id="useImage" class="btn primary" type="button">用这张图</button></div>';
+        document.getElementById('useImage').onclick = readImage;
+      };
+      reader.readAsDataURL(f);
+    };
+
+    document.getElementById('paste').onclick = function () {
+      const box = document.getElementById('pasteBox');
+      box.hidden = false;
+      document.getElementById('pasteText').focus();
+    };
+
+    document.getElementById('useText').onclick = function () {
+      const t = document.getElementById('pasteText').value.trim();
+      if (!t) { toast('先把题目文字粘进来。'); return; }
+      startFromText(t);
+    };
+  }
+
+  async function readImage() {
+    if (!state.image) return;
+    setBusy('我在看题…');
+    try {
+      await ensureSession();
+      const data = await api('/api/v1/sessions/' + state.sessionId + '/problem',
+        { mode: 'image', image_data_url: state.image });
+      state.text = data.text || '';
+      setBusy('');
+      setScreen('S2');
+    } catch (e) {
+      setBusy('');
+      showError(e.message, readImage);
+    }
+  }
+
+  async function startFromText(text) {
+    setBusy('我把这段文字接过来…');
+    try {
+      await ensureSession();
+      const data = await api('/api/v1/sessions/' + state.sessionId + '/problem',
+        { mode: 'text', text: text });
+      state.text = data.text || text;
+      setBusy('');
+      setScreen('S2');
+    } catch (e) {
+      setBusy('');
+      showError(e.message, function () { startFromText(text); });
+    }
+  }
+
+  // ── S2 确认题目 ──────────────────────────────────────────
+  function renderS2() {
+    app.innerHTML =
+      '<h1>题目读对了吗？</h1>' +
+      '<p class="lede">有认错的字，直接改。题目错了，后面全错。</p>' +
+      '<textarea id="confirmText" rows="6">' + esc(state.text) + '</textarea>' +
+      '<div class="row"><button id="confirm" class="btn primary" type="button">对，继续</button>' +
+      '<button id="back" class="btn ghost" type="button">重新拍</button></div>';
+
+    document.getElementById('confirm').onclick = confirmText;
+    document.getElementById('back').onclick = function () { setScreen('S1'); };
+  }
+
+  async function confirmText() {
+    const t = document.getElementById('confirmText').value.trim();
+    if (!t) { toast('题目不能是空的。'); return; }
+    state.text = t;
+    stepEl.textContent = STEP_NAMES.S3;
+    setBusy('我在把这道题拆开…');
+    try {
+      const data = await api('/api/v1/sessions/' + state.sessionId + '/confirm', { text: t });
+      state.stub = !!data.桩;
+      setBusy('');
+      setScreen('S4');
+    } catch (e) {
+      setBusy('');
+      showError(e.message, confirmText);
+    }
+  }
+
+  // ── S4 开场 ──────────────────────────────────────────────
+  function renderS4() {
+    app.innerHTML =
+      '<h1>准备好了吗？</h1>' +
+      '<p class="big-line">我们先把这道题读一遍，不着急做。</p>' +
+      '<p class="muted">这一遍不写算式，只把题读懂。</p>' +
+      '<div class="row"><button id="go" class="btn primary" type="button">开始读题</button></div>';
+    document.getElementById('go').onclick = startSession;
+  }
+
+  async function startSession() {
+    setBusy('我们开始。');
+    try {
+      const data = await api('/api/v1/sessions/' + state.sessionId + '/start', {});
+      state.progress = data.session.progress;
+      setBusy('');
+      setScreen('S5');
+    } catch (e) {
+      setBusy('');
+      showError(e.message, startSession);
+    }
+  }
+
+  // ── S5 / S6 判定型 ───────────────────────────────────────
+  function renderTarget(step) {
+    const nxt = state.progress && state.progress.next;
+    if (!nxt) { toast('这一步已经结束了。'); return; }
+    const isS5 = step === 'S5';
+    const opts = isS5 ? TYPE_OPTIONS : LEVEL_OPTIONS;
+    const title = isS5 ? '一句一句看' : '给条件分个级';
+    const lede = isS5
+      ? '第 ' + (state.progress.answered + 1) + ' / ' + state.progress.total + ' 句。先看它在这道题里干什么。'
+      : '第 ' + (state.progress.answered + 1) + ' / ' + state.progress.total + ' 条条件。它能直接拿来用吗？';
+
+    app.innerHTML =
+      '<h1>' + title + '</h1>' +
+      '<p class="lede">' + lede + '</p>' +
+      '<blockquote class="sentence">' + esc(nxt.text) + '</blockquote>' +
+      '<div class="options' + (isS5 ? '' : ' three') + '" id="opts">' +
+      opts.map(function (o) {
+        return '<button class="opt" type="button" data-v="' + o.v + '"><b>' + o.v + '</b><span>' + o.d + '</span></button>';
+      }).join('') +
+      '</div>' +
+      '<div id="feedback" class="feedback" hidden></div>' +
+      '<p class="hint" id="hint"></p>';
+
+    const buttons = Array.prototype.slice.call(app.querySelectorAll('.opt'));
+    buttons.forEach(function (b) {
+      b.onclick = function () { answerTarget(step, b.getAttribute('data-v'), buttons); };
+    });
+
+    startTimer(
+      function () {
+        const h = document.getElementById('hint');
+        if (h) h.textContent = isS5 ? '不着急。先看这句话在讲什么。' : '不着急。先看这个条件能不能直接用。';
+      },
+      function () { submitStuck(step, nxt); }
+    );
+  }
+
+  async function answerTarget(step, value, buttons) {
+    clearTimers();
+    buttons.forEach(function (b) { b.disabled = true; });
+    setBusy('我在想…');
+    let data;
+    try {
+      data = await api('/api/v1/sessions/' + state.sessionId + '/answer', {
+        step: step,
+        target_ref: state.progress.next.target_ref,
+        input: value
+      });
+    } catch (e) {
+      setBusy('');
+      showError(e.message, function () { setScreen(step === 'S5' ? 'S5' : 'S6'); });
+      return;
+    }
+    setBusy('');
+    showFeedback(step, data.verdict, function () { afterAnswer(data.session); });
+  }
+
+  async function submitStuck(step, nxt) {
+    clearTimers();
+    setBusy('先记下来。');
+    try {
+      const data = await api('/api/v1/sessions/' + state.sessionId + '/answer', {
+        step: step,
+        target_ref: nxt.target_ref,
+        input: '',
+        stuck: true
+      });
+      toast('这一步先记下来，我们继续。');
+      afterAnswer(data.session);
+    } catch (e) {
+      setBusy('');
+      showError(e.message, function () { setScreen(step === 'S5' ? 'S5' : 'S6'); });
+    }
+  }
+
+  function showFeedback(step, verdict, onContinue) {
+    const box = document.getElementById('feedback');
+    if (!box) { onContinue(); return; }
+    box.hidden = false;
+    let title = '';
+    let sub = '';
+    if (verdict.结果 === '一致') {
+      title = '对了。';
+      sub = verdict.依据 || '';
+    } else if (verdict.结果 === '不一致') {
+      title = step === 'S6'
+        ? '再看一眼：它是拿来就能用，还是要先转一步？'
+        : '再看一眼：它在给数字，还是在问你什么？';
+      sub = verdict.依据 || '';
+    } else {
+      title = '你为什么这么想？';
+      sub = verdict.来源 === '超时'
+        ? '这一步先记下来，不着急。'
+        : '这一步我不判对错，想听听你的理由。';
+    }
+    box.innerHTML =
+      '<div class="why">' + esc(title) + '</div>' +
+      (sub ? '<div class="sub">' + esc(sub) + '</div>' : '') +
+      '<div class="row"><button id="cont" class="btn primary" type="button">继续</button></div>';
+    document.getElementById('cont').onclick = onContinue;
+    speak(title);
+  }
+
+  function afterAnswer(session) {
+    state.progress = session.progress;
+    if (session.status === 'ANNOTATING') setScreen('S5');
+    else if (session.status === 'GRADING_CONDITIONS') setScreen('S6');
+    else if (session.status === 'PROBING_IMPLICIT') setScreen('S7');
+    else if (session.status === 'CLOSING') closeSession();
+    else if (session.status === 'CLOSED') setScreen('S8');
+    else toast('状态异常：' + session.status);
+  }
+
+  // ── S7 隐含条件 ──────────────────────────────────────────
+  function renderS7() {
+    app.innerHTML =
+      '<h1>有没有藏起来的那句话？</h1>' +
+      '<p class="lede">这几句里，有没有藏着一个没说出来的东西？用一句话说说看。</p>' +
+      '<textarea id="s7text" rows="4" placeholder="用一句话说说看……"></textarea>' +
+      '<div class="row"><button id="s7send" class="btn primary" type="button">说说看</button>' +
+      '<button id="s7no" class="btn ghost" type="button" hidden>我说不出来</button></div>' +
+      '<div id="feedback" class="feedback" hidden></div>' +
+      '<p class="hint" id="hint"></p>';
+
+    document.getElementById('s7send').onclick = function () { submitS7(false); };
+    document.getElementById('s7no').onclick = function () { submitS7(true); };
+
+    state.hintTimer = setTimeout(function () {
+      const b = document.getElementById('s7no');
+      if (b) b.hidden = false;
+      const h = document.getElementById('hint');
+      if (h) h.textContent = '说不出来也没关系。';
+    }, 15000);
+
+    state.stuckTimer = setTimeout(function () {
+      if (state.screen === 'S7') submitS7(true);
+    }, 40000);
+  }
+
+  async function submitS7(canNotSay) {
+    clearTimers();
+    const box = document.getElementById('s7text');
+    const text = (box && box.value || '').trim();
+    if (!canNotSay && !text) { toast('先写一句，或者点「我说不出来」。'); return; }
+
+    setBusy('我在想…');
+    let data;
+    try {
+      data = await api('/api/v1/sessions/' + state.sessionId + '/answer', {
+        step: 'S7',
+        target_ref: 'implicit',
+        input: canNotSay ? '' : text,
+        can_not_say: !!canNotSay
+      });
+    } catch (e) {
+      setBusy('');
+      showError(e.message, renderS7);
+      return;
+    }
+    setBusy('');
+
+    if (data.session.status === 'CLOSING') {
+      closeSession();
+      return;
+    }
+
+    // 第一次没命中：只追问一次
+    const f = document.getElementById('feedback');
+    f.hidden = false;
+    f.innerHTML =
+      '<div class="why">你说的这个，能再说说为什么吗？</div>' +
+      '<div class="sub">把球踢回去——只追问这一次。</div>' +
+      '<div class="row"><button id="again" class="btn primary" type="button">再说一次</button>' +
+      '<button id="skip" class="btn ghost" type="button">先记下来</button></div>';
+    document.getElementById('again').onclick = function () { f.hidden = true; if (box) box.focus(); };
+    document.getElementById('skip').onclick = function () { submitS7(true); };
+    speak('你说的这个，能再说说为什么吗？');
+  }
+
+  // ── S8 收束 ──────────────────────────────────────────────
+  async function closeSession() {
+    setBusy('我把这次收一下。');
+    try {
+      const data = await api('/api/v1/sessions/' + state.sessionId + '/close', {});
+      state.summary = data.session.summary;
+      setBusy('');
+      setScreen('S8');
+    } catch (e) {
+      setBusy('');
+      showError(e.message, closeSession);
+    }
+  }
+
+  function renderS8() {
+    const summary = state.summary || {};
+    const did = summary.did || [];
+    const note = summary.note || '';
+    app.innerHTML =
+      '<h1>' + esc(summary.headline || '这道题你已经读明白了。') + '</h1>' +
+      (did.length ? '<p class="big-line">' + esc(did.join('，') + '。') + '</p>' : '') +
+      '<p class="lede">现在你可以去写了——写完拍给我看。</p>' +
+      (note ? '<p class="hint">' + esc(note) + '</p>' : '') +
+      '<div class="row"><button id="again" class="btn ghost" type="button">重新开始</button></div>';
+    document.getElementById('again').onclick = function () { reset(); setScreen('S1'); };
+  }
+
+  function render() {
+    switch (state.screen) {
+      case 'S1': renderS1(); break;
+      case 'S2': renderS2(); break;
+      case 'S3': break;
+      case 'S4': renderS4(); break;
+      case 'S5': renderTarget('S5'); break;
+      case 'S6': renderTarget('S6'); break;
+      case 'S7': renderS7(); break;
+      case 'S8': renderS8(); break;
+      default: renderS1();
+    }
+  }
+
+  voiceBtn.onclick = function () {
+    voiceOn = !voiceOn;
+    if (!voiceOn && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+    voiceBtn.textContent = voiceOn ? '语音：开' : '语音：关';
+  };
+
+  document.addEventListener('click', function () { hasInteracted = true; }, { capture: true, once: true });
+
+  setScreen('S1');
+})();
+</script>
+</body>
+</html>

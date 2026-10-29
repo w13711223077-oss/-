@@ -1,3 +1,10 @@
 __pycache__/
 *.py[cod]
 .DS_Store
+数学审题逐题陪练-backend/data/
+数学审题逐题陪练-backend/venv/
+math-tutoring-backend/venv/
+
+venv/
+.pytest_cache/
+graphify-out/

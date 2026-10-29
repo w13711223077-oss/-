@@ -1,7 +1,7 @@
 # 数学审题逐题陪练 · 后端骨架
 
 > **这是一个骨架，不是产品。** 它把「v1 该怎么落地」这件事变成可以跑的东西。
-> 最后更新：2026-10-01
+> 最后更新：2026-10-29
 
 ---
 
@@ -50,6 +50,14 @@ set PEILIAN_STUB=1
 > **桩模式照 `p0_judge.py --baseline` 的道理**：先证明整条链是通的，再去调真的模型。
 > 一个永远不会失败的检查，等于没有检查。
 
+把首体验页也同源发出来：
+
+```bash
+python run.py --static "../流程步骤/5.创建项目骨架/v1"
+```
+
+然后打开 `http://127.0.0.1:8787/`，从 S1 拍照/粘贴走到 S8 收束。
+
 跑测试：
 
 ```bash
@@ -60,7 +68,22 @@ python -m unittest discover -s tests -v
 
 ## 三、端点
 
-分两组，加两个元信息端点。
+三组：会话 / 底层 / 记录；加两个元信息端点。
+
+### 端点组⓪ —— 会话（S1—S8）
+
+| 方法 | 路径 | 干什么 |
+|---|---|---|
+| POST | `/api/v1/sessions` | 创建会话 |
+| POST | `/api/v1/sessions/{id}/problem` | 上传图片/文本，读题 |
+| POST | `/api/v1/sessions/{id}/confirm` | 确认文本 + F2 备课（锁定） |
+| POST | `/api/v1/sessions/{id}/start` | S4 开场完成，进入 S5 |
+| POST | `/api/v1/sessions/{id}/answer` | S5/S6/S7 作答 |
+| POST | `/api/v1/sessions/{id}/close` | S8 收束 |
+| GET | `/api/v1/sessions/{id}` | 读会话（学生投影） |
+| POST | `/api/v1/sessions/{id}/discard` | 丢弃 |
+
+会话状态与守卫在 `app/domain/session_state.py` + `app/engine/flow.py`；前端只渲染，不自己记状态。
 
 ### 端点组① —— 转发模型调用（藏 key）
 
@@ -85,6 +108,13 @@ python -m unittest discover -s tests -v
 | GET | `/api/v1/pending` | **未清账目** —— 第九节 #2「重练的入口」 |
 | POST | `/api/v1/wrong-items/done` | 把一道错题标成「重做过了」 |
 
+### 端点组③ —— 首体验 S1–S8 的两个契约
+
+| 方法 | 路径 | 干什么 |
+|---|---|---|
+| POST | `/api/v1/prep` | **F2 备课**。输入题目原文，返回解剖结果（分句 / 类型 / 级别 / 隐含条件集合 / 不确定项）。桩模式只做分句和启发式分类。 |
+| POST | `/api/v1/judge` | **F3 判定**。输入备课解剖 ＋ 学生输入 ＋ 步骤（S5/S6/S7），返回「一致 / 不一致 / 不判定」。**Gate 0 之前固定返回「不判定」**。 |
+
 ### 元信息
 
 | 方法 | 路径 | 干什么 |
@@ -108,6 +138,17 @@ python -m unittest discover -s tests -v
 §6·决策 4 说卡点记录唯一的价值是「**维度长期稳定**」——
 它是一张对照表，不是一个待办清单。**拿它算「还有几件事没做」是理解错了它。**
 所以 `有账` 这个字段只看错题。
+
+### 会话状态机
+
+`domain/session_state.py` 定 12 个状态、8 条守卫；`engine/flow.py` 负责转移。
+顺序门由 `tools/registry.py` 的 `TOOL_META` 声明，不靠前端自觉：
+
+```
+CREATED → READING → CONFIRMING → PREPARING → READY
+→ ANNOTATING → GRADING_CONDITIONS → PROBING_IMPLICIT → CLOSING → CLOSED
+任意非终态 → DISCARDED；READING/PREPARING 失败 → ERROR（可重试）
+```
 
 ### F3 判定引擎**现在是故意的「不判」**
 
@@ -137,16 +178,29 @@ python -m unittest discover -s tests -v
 数学审题逐题陪练-backend/
 ├── run.py                    启动入口
 ├── app/
-│   ├── main.py               HTTP 服务与路由（零框架）
+│   ├── main.py               HTTP 服务与路由（零框架 + 会话动态路由）
 │   ├── api/
+│   │   ├── sessions.py       端点组⓪：会话生命周期 / 答题 / 收束
 │   │   ├── forward.py        端点组①：转发（藏 key）
-│   │   └── records.py        端点组②：存记录 / 未清账目
-│   ├── domain/schema.py      数据契约 —— 全后端唯一「拟字段」的地方
-│   ├── engine/judge.py       F3 判定引擎（现在是「不判定」）
-│   └── store/jsonl_store.py  追加式 JSONL 存储
-├── tests/                    29 个测试
+│   │   ├── records.py        端点组②：存记录 / 未清账目
+│   │   └── session.py        端点组③：/prep /judge（无状态兼容）
+│   ├── domain/
+│   │   ├── schema.py         备课/卡点/练习记录契约
+│   │   └── session_state.py  12 个状态 + 转移表
+│   ├── engine/
+│   │   ├── flow.py           确定性流程编排 + 顺序门
+│   │   ├── prep.py           F2 备课（桩/真模型）
+│   │   ├── judge.py          F3 判定（现在是「不判定」）
+│   │   └── audit.py          可见性投影 / 答案字段剥离
+│   ├── tools/registry.py     TOOL_META + Guard L1
+│   └── store/
+│       ├── jsonl_store.py    追加式 JSONL 记录
+│       └── session_store.py  会话 JSON 落盘
+├── tests/                    60 个测试
 └── data/                     运行时生成，已 gitignore
 ```
+
+前端在 `../流程步骤/5.创建项目骨架/v1/index.html`：单页 HTML ＋ 原生 JS，零构建。
 
 ### `domain/schema.py` 是唯一会「编」的地方
 
@@ -163,9 +217,10 @@ python -m unittest discover -s tests -v
 
 | 没做 | 为什么 |
 |---|---|
-| **前端没动** | 这一轮的目标是「后端先独立跑通」。`v1/index.html` 还是直连 DeepSeek 的 |
+| **前端只做了 S1–S8** | S9–S12（写解答、批改、变式题）还没接；F10 要等 Gate 2 |
 | **F3 真的判定** | 等 P0（见上） |
-| **F2 备课** | 它是判定链的源头，应该和 F3 一起做；P0 的 `SYSTEM_PROMPT` 就是它的雏形 |
+| **F2 的真模型路径** | `/prep` 与 `/confirm` 都已接上，但桩模式是启发式分句；真模型要设 key 再验 |
+| **家长/教师端** | v1 只做学生端；家长/教师只留数据投影 |
 | **鉴权** | v1 只在受控范围内用（§8.1）。**上线前必须补** |
 | **并发写** | 现在是进程内一把锁。单机自用够；多进程共用要换成带锁的存储 |
 
@@ -173,6 +228,6 @@ python -m unittest discover -s tests -v
 
 ## 七、下一步建议
 
-1. **把 `v1/index.html` 接过来**：读图改成调 `/api/v1/model/read`，key 从页面里拿掉
+1. **跑起来看 S1–S8**：`PEILIAN_STUB=1 python run.py --static "../流程步骤/5.创建项目骨架/v1"`，打开 `http://127.0.0.1:8787/`
 2. **跑 P0**（`3.验证与商业/p0_判定可靠性测试/`），拿到「误判正例率」那个数字
 3. P0 过了再动 `engine/judge.py`，把「不判定」换成真的比对

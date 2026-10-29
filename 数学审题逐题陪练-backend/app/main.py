@@ -23,7 +23,7 @@ import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
-from .api import forward, records
+from .api import forward, records, session, sessions
 from .domain import schema
 
 # ─────────────────────────────────────────────────────────────
@@ -37,6 +37,16 @@ def _健康(_请求体, _查询):
         "桩模式": forward._桩模式(),
         "有模型key": bool(forward._key()),
         "端点": ["%s %s" % (m, p) for m, p, _ in 路由],
+        "会话端点": [
+            "POST /api/v1/sessions",
+            "POST /api/v1/sessions/{id}/problem",
+            "POST /api/v1/sessions/{id}/confirm",
+            "POST /api/v1/sessions/{id}/start",
+            "POST /api/v1/sessions/{id}/answer",
+            "POST /api/v1/sessions/{id}/close",
+            "GET  /api/v1/sessions/{id}",
+            "POST /api/v1/sessions/{id}/discard",
+        ],
     }
 
 
@@ -47,9 +57,29 @@ def _契约(_请求体, _查询):
 路由 = [
     ("GET",  "/api/v1/health", _健康),
     ("GET",  "/api/v1/schema", _契约),
-] + forward.路由 + records.路由
+] + forward.路由 + records.路由 + session.路由 + sessions.路由
 
 _路由索引 = {(方法, 路径): 处理 for 方法, 路径, 处理 in 路由}
+
+
+def _动态处理(方法, 路径):
+    """把 /api/v1/sessions/{id}/... 解析成带 sid 的调用。"""
+    前缀 = "/api/v1/sessions/"
+    if not 路径.startswith(前缀):
+        return None
+    余 = 路径[len(前缀):].strip("/")
+    if not 余:
+        return None
+    段 = 余.split("/")
+    if len(段) == 1 and 方法 == "GET":
+        sid = 段[0]
+        return lambda 体, 查: sessions.读取(体, 查, sid)
+    if len(段) == 2:
+        sid, 动作 = 段
+        处理 = sessions.动态路由.get((方法, 动作))
+        if 处理:
+            return lambda 体, 查: 处理(体, 查, sid)
+    return None
 
 
 # ─────────────────────────────────────────────────────────────
@@ -125,6 +155,8 @@ class 处理器(BaseHTTPRequestHandler):
                 return
 
         处理 = _路由索引.get((方法, 路径))
+        if 处理 is None:
+            处理 = _动态处理(方法, 路径)
         if 处理 is None:
             self._回(404, "application/json; charset=utf-8",
                      json.dumps({

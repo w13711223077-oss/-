@@ -5,7 +5,7 @@
 
     python run.py                       # 默认 127.0.0.1:8787
     python run.py --port 9000
-    python run.py --static "../5.创建项目骨架/v1"   # 顺手把 v1 网页同源发出去
+    python run.py --static "../流程步骤/5.创建项目骨架/v1"   # 顺手把 v1 网页同源发出去
 
 要真调模型，先设 key：
 
