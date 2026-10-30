@@ -13,7 +13,7 @@
 | 内容类型 | `application/json; charset=utf-8` |
 | 命名 | 字段用中文（与 11/18 一致）；路径用英文 |
 | 认证 | v1 无账号；只有 `session_id` 做隔离；上线前必须补鉴权 |
-| 幂等 | `answer` 对同一 `target_ref` 只接受一次；重复返回 409/`E_DEDUP` |
+| 幂等 | `answer` 对同一 `target_ref` 只接受一次；重复返回 409/`E_LIMIT`（`E_DEDUP` 为 v2 预留） |
 | 错误 | `{错误, 码, 提示?}`；HTTP 状态码 + 业务码 |
 | 时间 | ISO 8601，带时区 |
 
@@ -107,19 +107,18 @@
 
 ```json
 {
-  "session_id": "S-...",
-  "status": "READY",
-  "prep": {
-    "prep_id": "PR-...",
-    "problem_id": "P-...",
-    "locked": true,
-    "sentences": [{"i":0,"text":"...","type":"背景","confidence":"高","note":"..."}],
-    "implicit_set": ["总人数不变"],
-    "uncertainties": []
+  "session": {
+    "session_id": "S-...",
+    "status": "READY",
+    "problem": {"confirmed_text": "..."},
+    "progress": {"step": null, "answered": 0, "total": 0, "next": null},
+    "checkpoints": {}
   },
-  "stub": false
+  "桩": false
 }
 ```
+
+> ⚠️ **prep 不得出现在任何对外响应中**（14·§三）。`/confirm` 只返回学生投影；备课解剖（分句 / type / level / 隐含条件集合 / note）只留在服务端，供 S5/S6/S7 使用。
 
 错误：`E_STATE`、`E_PREP`（备课失败/不合契约）、`E_TEXT_EMPTY`。
 
@@ -139,17 +138,25 @@
 ```json
 {
   "verdict": {"结果": "不判定", "依据": "判定可靠性还没测（P0 未通过）。这一步改为提问，不判对错。", "来源": "未上线"},
-  "session_status": "ANNOTATING",
-  "progress": {"answered": 1, "total": 5, "next": "sentence:1"},
-  "checkpoint": null
+  "session": {
+    "session_id": "S-...",
+    "status": "ANNOTATING",
+    "progress": {
+      "step": "S5", "answered": 1, "total": 5,
+      "next": {"step": "S5", "target_ref": "sentence:1", "text": "..."}
+    },
+    "checkpoints": {}
+  }
 }
 ```
 
 - `S5` 全部完成 → `GRADING_CONDITIONS`；`S6` 全部完成 → `PROBING_IMPLICIT`；`S7` 结束 → `CLOSING`。
 - `S7` 最多两次（首次 + 追问一次）；第二次或 `can_not_say` 后 `done=true`。
-- **学生响应里不返回 `target_ref` 证据以外的内部字段**；`checkpoint` 只给 `{type,count,severity}` 或 null。
+- **学生响应里不返回 `target_ref` 证据以外的内部字段**；`session.checkpoints` 只给 `{type: count}` 聚合，不给具体句子/条件。
 
-错误：`E_STATE`（步骤不对）、`E_LIMIT`（同一目标已答）、`E_DEDUP`（重复）、`E_MODEL`。
+错误：`E_STATE`（步骤不对）、`E_LIMIT`（同一目标已答）、`E_MODEL`。
+
+> `E_DEDUP` 是 v2 预留；当前没有去重，重复答同一目标返回 `E_LIMIT`（25·D4）。
 
 ### 3.5 `POST /api/v1/sessions/{id}/close`
 
@@ -173,8 +180,8 @@
 
 ### 3.6 `GET /api/v1/sessions/{id}`
 
-返回会话的**学生投影**：状态、题目确认文本、prep（分句/隐含集合/不确定项，**不含 note 里的答案性内容**）、已答进度、卡点聚合、summary。
-不返回原始图片、内部证据、`answer/solution`。
+返回会话的**学生投影**：状态、题目确认文本、`progress`（当前步 / 下一步）、卡点聚合、summary。
+**不返回 `prep`**（分句 / 类型 / 级别 / 隐含条件集合），也不返回原始图片、内部证据、`answer/solution`（14·§三）。
 
 ### 3.7 `POST /api/v1/sessions/{id}/discard`
 
@@ -208,7 +215,7 @@ Gate 0 前固定不判定；P0 通过后只换引擎实现，契约不变。
 | 400 | `E_STATE` | 当前状态不允许 | 回到正确步骤 / 重开会话 |
 | 400 | `E_TEXT_EMPTY` | 文本为空 | 提示补全 |
 | 404 | `E_NOT_FOUND` | 会话不存在 | 回开头 |
-| 409 | `E_LIMIT` / `E_DEDUP` | 已答/重复 | 忽略，显示已记录 |
+| 409 | `E_LIMIT` | 同一目标已答 | 忽略，显示已记录 |
 | 422 | `E_CONTRACT` | 备课/记录不合契约 | 显示明细，重试 |
 | 502 | `E_MODEL` | 模型/网络错误 | 重试 / 桩模式 |
 | 503 | `E_NO_KEY` | 服务端无 key | 提示设 key 或开桩模式 |
@@ -242,3 +249,9 @@ Gate 0 前固定不判定；P0 通过后只换引擎实现，契约不变。
 ---
 
 > **下一份**：[20-前端页面规格](./20-前端页面规格.md)
+
+---
+
+## 沿革
+
+- **2026-10-30**：按 25·§2.2 修正 D1—D4（/confirm 不再返回 prep；/answer 改为 `{verdict, session}`；GET 不含 prep；`E_DEDUP` 标为 v2 预留）。
